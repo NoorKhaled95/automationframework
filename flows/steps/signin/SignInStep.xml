@@ -1,0 +1,9 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="SignInStepSuite">
+    <test name="SignInStepTest">
+        <classes>
+            <class name="tests.signIn.SignInTest" />
+        </classes>
+    </test>
+</suite>
+

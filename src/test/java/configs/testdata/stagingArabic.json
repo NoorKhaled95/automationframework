@@ -1,0 +1,18 @@
+{
+  "base-url": {
+    "staging": {
+      "english": "https://staging.example.com/en",
+      "arabic": "https://staging.example.com/ar"
+    }
+  },
+  "users": {
+    "validUser": {
+      "email": "",
+      "password": ""
+    },
+    "invalidUser": {
+      "email": "",
+      "password": ""
+    }
+  }
+}

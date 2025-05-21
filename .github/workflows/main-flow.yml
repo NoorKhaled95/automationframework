@@ -1,0 +1,66 @@
+
+name: MainFlow
+
+on:
+  #  push:
+  #     branches: ["master"]
+  schedule:
+    - cron: '40 5 * * *'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      selenium:
+        image: selenium/standalone-chrome:4.1.0
+        ports:
+          - 4444:4444
+    strategy:
+      matrix:
+        os: [mac]
+        browser: [chrome]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Install Xvfb
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb
+          Xvfb :99 -screen 0 1920x1080x24 &  # Start Xvfb in the background
+
+      - name: Set DISPLAY environment variable
+        run: echo "DISPLAY=:99" >> $GITHUB_ENV
+
+      - name: Run Selenium Tests
+        run: mvn clean test -P MainFlow -DremoteDriverUrl=http://selenium:4444/wd/hub -Dos=${{ matrix.os }} -Dbrowser=${{ matrix.browser }}
+      - name: Upload test screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots
+          path: ./screenshots/
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: ./extent-reports/
+
+#      - name: notify-slack
+#        if: failure()
+#        env:
+#          #          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_QATEAM_WEBHOOK_URL }}
+#          WORKFLOW_NAME: ${{ github.workflow }}
+#        run: |
+#          curl -v -X POST -H 'Content-type: application/json' --data \
+#          '{"text": "GitHub Workflow '${WORKFLOW_NAME}' failed. Please check the logs.", "channel": "#qa-team", "username": "Workflow Bot"}' \
+#          https://hooks.slack.com/services/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
